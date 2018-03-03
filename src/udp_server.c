@@ -11,6 +11,16 @@
 
 #define BUFFER_LENGTH 1024
 
+/*
+* Function: setup_socket
+* ---------------------
+* set up a socket
+*  type: socket type, such as SOCK_STREAM
+*  addr: local address for this socket
+*  port: local port for this socket
+*  return:   socket fd, success
+*            -1, if there is any error 
+*/
 int setup_socket(int type, char* addr, int port)
 {
     int server_socket;

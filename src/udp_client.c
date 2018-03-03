@@ -9,6 +9,13 @@
 #include "aes.h"
 #include "dns.h"
 
+/*
+* Function: setup_tcp_connection
+* ---------------------
+* set up a tcp connection to server
+*  return:   0, success
+*            -1, if there is any error 
+*/
 int setup_tcp_connection()
 {
     int client_socket;
