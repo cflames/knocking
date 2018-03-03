@@ -38,15 +38,16 @@ def run_udp_server():
         print("run udp server success")
     return 0
 
-def run_udp_client():
+def run_udp_client(password='1234567'):
     """
     go to the src folder and run udp_client
     return 0 if running server succesfully, otherwise -1
     """
     # remove old binary
-    result = run_shell_command("{0}/udp_client".format(_SRC_PATH))
-    if not "Client is to close" in result:
-        printf("Failed to run client")
+    result = run_shell_command("{0}/udp_client {1}".format(_SRC_PATH, password))
+    print(result)
+    if not "Setup tcp connection success" in result:
+        print("Failed to run client")
         return -1
     return 0
 
@@ -73,6 +74,23 @@ def test_udp_server():
         print("udp server is still running, test case failed")
         sys.exit(-1)
 
+def test_incorrect_password():
+    """
+    Try to send an incorrect password
+    """
+    if run_udp_server() != 0:
+        print("Failed to run udp server, test case failed")
+        sys.exit(-1)
+
+    if run_udp_client('12345') == 0:
+        print("Server accept incorrect password, test case failed")
+        sys.exit(-1)
+
+    result = run_shell_command("netstat -anp | grep 127.0.0.1:443")
+    if result:
+        print("443 port is opened with incorrect password, test case failed")
+        sys.exit(-1)
+
 def test_udp_server_and_client():
     """
     run udp server, then run udp client, check if server is closed after client running
@@ -88,14 +106,24 @@ def test_udp_server_and_client():
     result = run_shell_command("netstat -anp | grep 127.0.0.1:53")
     if result:
         print("Udp server is still running, test case failed")
+        sys.exit(-1)        
+ 
+    result = run_shell_command("netstat -anp | grep 127.0.0.1:443")
+    if result:
+        print("443 port is still open, test case failed")
         sys.exit(-1)
+
+    
 
 def main():
     test_udp_server()
-    print("Test case passed: test_udp_server")
+    print("###Test case passed: test_udp_server")
+
+    test_incorrect_password()
+    print("###Test case passed: test_incorrect_password")
 
     test_udp_server_and_client()
-    print("Test case passed: test_udp_server_and_client")
+    print("###Test case passed: test_udp_server_and_client")
 
 if __name__ == "__main__":
     main()
