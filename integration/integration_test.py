@@ -127,13 +127,13 @@ def test_udp_server_and_client():
 
 def main():
     test_udp_server()
-    print("###Test case passed: test_udp_server")
+    print("###Test case passed: test_udp_server\n")
 
     test_incorrect_password()
-    print("###Test case passed: test_incorrect_password")
+    print("###Test case passed: test_incorrect_password\n")
 
     test_udp_server_and_client()
-    print("###Test case passed: test_udp_server_and_client")
+    print("###Test case passed: test_udp_server_and_client\n")
 
 if __name__ == "__main__":
     main()

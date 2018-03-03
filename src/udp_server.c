@@ -11,6 +11,34 @@
 
 #define BUFFER_LENGTH 1024
 
+int setup_socket(int type, char* addr, int port)
+{
+    int server_socket;
+    struct sockaddr_in server_addr;
+
+    // init server address struct
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = inet_addr(addr);
+    server_addr.sin_port = htons(port);
+
+    // create socket for TCP
+    if( (server_socket = socket(PF_INET, type, 0)) < 0 )
+    {  
+        printf("Failed to create tcp socket\n");
+        return -1;
+    }
+   
+    // bind socket to address
+    if ( bind(server_socket, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) < 0 )
+    {
+        printf("Failed to bind tcp socket to address\n");
+        return -1;
+    }
+
+    return server_socket;
+    
+}
 /*
 * Function: run_tcp_server
 * ---------------------
@@ -22,26 +50,13 @@
 int run_tcp_server()
 {
     int server_socket, client_socket;
-    struct sockaddr_in server_addr, client_addr;
+    struct sockaddr_in client_addr;
     int sin_size;
 
-    // init server address struct
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    server_addr.sin_port = htons(443);
-
-    // create socket for TCP
-    if( (server_socket = socket(PF_INET, SOCK_STREAM, 0)) < 0 )
-    {  
-        printf("Failed to create tcp socket\n");
-        return -1;
-    }
-   
-    // bind socket to address
-    if ( bind(server_socket, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) < 0 )
+    server_socket = setup_socket(SOCK_STREAM, "127.0.0.1", 443);
+    if ( server_socket == -1 )
     {
-        printf("Failed to bind tcp socket to address\n");
+        printf("Failed to setup tcp socket\n");
         return -1;
     }
 
@@ -75,32 +90,16 @@ int main()
 {
     int udp_socket = -1;
     char buffer[BUFFER_LENGTH];
-    struct sockaddr_storage serverStorage;
-    struct sockaddr_in server_addr;
-    int sin_size;
     
     char *decrypt_string  = NULL;
     char *password        = "1234567";
     int recv_length       = 0; // length for received message
 
-    /*Create UDP socket*/
-    udp_socket = socket(PF_INET, SOCK_DGRAM, 0);
-    if ( udp_socket < 0 )
+    // Create UDP socket
+    udp_socket = setup_socket(SOCK_DGRAM, "127.0.0.1", 53);
+    if ( udp_socket == -1 )
     {
-        printf("Failed to create udp socket\n");
-        return -1;
-    }
-
-    /*Configure address struct*/
-    memset(&server_addr,0,sizeof(server_addr));
-    server_addr.sin_family      = AF_INET;
-    server_addr.sin_port        = htons(53);
-    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-
-    if ( bind(udp_socket, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) < 0 )
-    {
-        printf("bind is failed for udp socket\n");
-        close(udp_socket);
+        printf("Failed to setup udp socket\n");
         return -1;
     }
 
