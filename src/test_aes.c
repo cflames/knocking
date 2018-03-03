@@ -4,7 +4,6 @@
 
 #include "aes.h"
 
-#define FREE_STR(ptr) if (ptr != NULL ) { free(ptr); }
 /*
 * Test for decryption
 */

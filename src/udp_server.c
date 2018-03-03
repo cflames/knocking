@@ -3,6 +3,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <stdlib.h>
+
+#include "aes.h"
 
 #define BUFFER_LENGTH 1024
 
@@ -15,11 +18,12 @@ int main()
     int udp_socket = -1;
     char buffer[BUFFER_LENGTH];
     struct sockaddr_storage serverStorage;
-    socklen_t addr_size;
     struct sockaddr_in server_addr;
     int sin_size;
-
-    int recv_length = 0; // length for received message
+    
+    char *decrypt_string  = NULL;
+    char *password        = "1234567";
+    int recv_length       = 0; // length for received message
 
     /*Create UDP socket*/
     udp_socket = socket(PF_INET, SOCK_DGRAM, 0);
@@ -41,12 +45,39 @@ int main()
         return -1;
     }
 
-    recv_length = recv(udp_socket, buffer, BUFFER_LENGTH, 0);
-    if ( recv_length > 0 )
+    for (;;)
     {
-        printf("Received string: %s\n", buffer);
+        recv_length = recv(udp_socket, buffer, BUFFER_LENGTH, 0);
+        if ( recv_length == -1 )
+        {
+            printf("Failed to receive message from client\n");
+            return -1;
+        }
+        if ( recv_length > 0 )
+        {
+            printf("received: %d bytes\n", recv_length);
+            break;
+        }
     }
 
+    int res = aes_decrypt(buffer, &decrypt_string, recv_length);
+    if ( res != 0 )
+    {
+        printf("Failed to decrypt string\n");
+        FREE_STR(decrypt_string)
+        return -1;
+    }
+    if ( strcmp(decrypt_string, password) != 0 )
+    {
+        printf("Password incorrect\n");
+        //send(udp_socket, "")
+        FREE_STR(decrypt_string)
+        return -1;
+    }
+
+    printf("Received string: %s\n", decrypt_string);
+
+    FREE_STR(decrypt_string)
     return 0;
 
 }

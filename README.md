@@ -19,13 +19,13 @@ File Structure:<br />
     go to src folder and compile server and client<br />
         2.1 run server : make sure you have root permission, because it listens on 53 port<br />
         ```
-        make server<br />
-        sudo ./udp_server<br />
-        ```
+        make server
+        sudo ./udp_server
+        ``` <br />
         2.2 run client: <br />
         ```
-        make client <br />
-        sudo ./udp_client <br />
+        make client 
+        sudo ./udp_client 
         ```
 
 3. how to run integration test <br />

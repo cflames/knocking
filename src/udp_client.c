@@ -3,6 +3,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <stdlib.h>
+
+#include "aes.h"
 
 /*
 * Main function for udp socket client
@@ -14,7 +17,8 @@ int main()
     int client_socket = -1;
     struct sockaddr_in server_addr;
     socklen_t addr_size;
-
+    char *encrypt_string = NULL;
+    
     char *buffer = "1234567";
 
     /*Configure  address struct*/
@@ -32,12 +36,24 @@ int main()
         return -1;
     }
 
-     /*Send message to server*/
-    if ( sendto( client_socket, buffer, strlen(buffer), 0, (struct sockaddr *)&server_addr, addr_size) < 0 )
+    // encrypt input string
+    int length = aes_encrypt(buffer, &encrypt_string);
+    if ( length < 0 )
     {
-        printf("Failed to send message to server\n");
+        printf("Encrypted string is failed\n");
+        FREE_STR(encrypt_string)
         return -1;
     }
+
+     /*Send message to server*/
+    if ( sendto( client_socket, encrypt_string, length, 0, (struct sockaddr *)&server_addr, addr_size) < 0 )
+    {
+        printf("Failed to send message to server\n");
+        FREE_STR(encrypt_string)
+        return -1;
+    }
+
+    FREE_STR(encrypt_string)
 
     printf("Client is to close now\n");
 
