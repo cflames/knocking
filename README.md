@@ -32,3 +32,12 @@ File Structure:<br />
         ```
         sudo python integration_test.py 
         ```
+
+4. about firewall compatibility<br />
+    usually, the firewall filter the ip packets based on ip address and port<br />
+    in this case, the firewall should be between server and client. and the ip<br />
+    and port 53 should not be dropped by firewall. <br />
+    Perhaps some firewall can inspect packet content to discard invalid packets<br />
+    in this case, firewall might check the udp packet to server port 53. In  order<br />
+    to bypass firewall, the client can send a "real" dns message to server with <br />
+    real dns header and content, but include encrypted content inside queries<br />

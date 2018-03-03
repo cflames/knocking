@@ -7,6 +7,7 @@
 #include <unistd.h> 
 
 #include "aes.h"
+#include "dns.h"
 
 int setup_tcp_connection()
 {
@@ -48,7 +49,14 @@ int main(int argc, char *argv[])
     char *encrypt_string = NULL;
     char *buffer         = NULL;
 
-    /*Configure  address struct*/
+    // dns message
+    unsigned char dns_buf[256], *qname;
+    memset(dns_buf, 0, 256);
+
+    struct DNS_HEADER *dns = NULL;
+    struct QUESTION *qinfo = NULL;
+
+    // address settting
     server_addr.sin_family      = AF_INET;
     server_addr.sin_port        = htons(53);
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -80,8 +88,27 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    //Set the DNS structure to standard queries
+    dns = (struct DNS_HEADER *)&dns_buf;
+    dns->id         = (unsigned short) htons(10);
+    dns->rd         = 1;
+    dns->q_count    = htons(1);
+ 
+    //point to the query portion
+    qname           = (unsigned char*)&dns_buf[sizeof(struct DNS_HEADER)];
+    qname[0]        = length; // first byte is the length
+    qname++; // move the pointer to next byte
+    memcpy(qname, encrypt_string, length);
+    qname[length]   = 0x0; // end of qname
+
+    int dns_message_length = sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 2);
+    qinfo = (struct QUESTION*)&dns_buf[dns_message_length];
+    qinfo->qtype = htons(1); //type of the query
+    qinfo->qclass = htons(1);
+
      /*Send message to server*/
-    if ( sendto( client_socket, encrypt_string, length, 0, (struct sockaddr *)&server_addr, addr_size) < 0 )
+    dns_message_length = dns_message_length + sizeof(struct QUESTION);
+    if ( sendto( client_socket, dns_buf, dns_message_length, 0, (struct sockaddr *)&server_addr, addr_size) < 0 )
     {
         printf("Failed to send message to server\n");
         FREE_STR(encrypt_string)

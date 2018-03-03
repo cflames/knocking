@@ -7,6 +7,7 @@
 #include <unistd.h> 
 
 #include "aes.h"
+#include "dns.h"
 
 #define BUFFER_LENGTH 1024
 
@@ -121,7 +122,12 @@ int main()
     
     close(udp_socket);
 
-    int res = aes_decrypt(buffer, &decrypt_string, recv_length);
+    // get the encrypted content from dns message
+    char* qname =(unsigned char*)&buffer[sizeof(struct DNS_HEADER)];
+    qname++;
+    printf("Received DNS packet\n");
+
+    int res = aes_decrypt(qname, &decrypt_string, recv_length);
     if ( res != 0 )
     {
         printf("Failed to decrypt string\n");

@@ -2,6 +2,7 @@ import socket
 import os
 import sys
 import time
+import binascii
 from subprocess import check_output
 
 _CURRENT_PATH = os.path.join(os.path.realpath(__file__))
@@ -47,7 +48,6 @@ def run_udp_client(password='1234567'):
     result = run_shell_command("{0}/udp_client {1}".format(_SRC_PATH, password))
     print(result)
     if not "Setup tcp connection success" in result:
-        print("Failed to run client")
         return -1
     return 0
 
@@ -56,7 +56,15 @@ def send_udp_packet():
     Send a udp packet to 127.0.0.1:53
     """
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.sendto("1234567", ("127.0.0.1", 53))
+    dns_str = binascii.unhexlify('441501000001000000000000107662592E1417360C26906030F94FC2130000010001')
+    sock.sendto(dns_str, ("127.0.0.1", 53))
+
+def send_tcp_packet():
+    """
+    send a tcp request to 443 port
+    """
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(("127.0.0.1", 443))
 
 def test_udp_server():
     """
@@ -67,8 +75,10 @@ def test_udp_server():
         sys.exit(-1)
     
     send_udp_packet()
+    time.sleep(1)
+    send_tcp_packet()
 
-    result = run_shell_command("netstat -anp | grep 127.0.0.1:53")
+    result = run_shell_command("netstat -anp | grep 127.0.0.1:443")
 
     if result:
         print("udp server is still running, test case failed")
