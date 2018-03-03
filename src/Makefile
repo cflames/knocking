@@ -1,4 +1,6 @@
-.PHONY: clean test server client
+.PHONY: clean test server client all
+
+all: server client
 
 test:
 	gcc -o test test_aes.c aes.c -lcrypto

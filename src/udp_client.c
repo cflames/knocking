@@ -36,7 +36,10 @@ int main()
     if ( sendto( client_socket, buffer, strlen(buffer), 0, (struct sockaddr *)&server_addr, addr_size) < 0 )
     {
         printf("Failed to send message to server\n");
+        return -1;
     }
+
+    printf("Client is to close now\n");
 
     return 0;
 }
